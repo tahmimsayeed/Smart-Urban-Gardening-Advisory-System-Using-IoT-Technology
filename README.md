@@ -15,9 +15,9 @@ transfer learning on a labeled dataset of leaf diseases.
 
 | Name | Role / Modules |
 |---|---|
-| *(add name)* | Authentication, Plant Management, Disease Detection |
-| *(add name)* | Weather Recommendation, IoT Sensor Module, Alert Module |
-| *(add name)* | Nursery Module, Knowledge Base |
+| *Jessica Sen* | Authentication, Plant Management, Disease Detection |
+| *Tahmim Binta Sayeed* | Weather Recommendation, IoT Sensor Module, Alert Module |
+| *Mahir Fatema* | Nursery Module, Knowledge Base |
 
 ---
 
