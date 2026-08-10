@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Weather &amp; Care &mdash; {{ plant.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <a href="{{ url_for('plants.view_plant', plant_id=plant.plantId) }}" class="text-decoration-none text-success mb-3 d-inline-block">
+    <i class="bi bi-arrow-left me-1"></i>Back to {{ plant.name }}
+  </a>
+
+  <h1 class="h3 mb-1 text-success"><i class="bi bi-cloud-sun me-2"></i>Weather &amp; Care</h1>
+  <p class="text-muted mb-4">For {{ plant.name }}, based on conditions in <strong>{{ location }}</strong>.</p>
+
+  <form method="GET" action="{{ url_for('weather.weather', plant_id=plant.plantId) }}" class="row g-2 mb-4">
+    <div class="col-8 col-sm-6">
+      <input type="text" name="location" class="form-control" value="{{ location }}" placeholder="City,CountryCode e.g. Dhaka,BD">
+    </div>
+    <div class="col-4 col-sm-3">
+      <button type="submit" class="btn btn-outline-success w-100">Update</button>
+    </div>
+  </form>
+
+  {% if current_source == "no_api_key" %}
+    <div class="alert alert-warning" role="alert">
+      <i class="bi bi-exclamation-triangle me-1"></i>
+      No OpenWeatherMap API key configured yet (<code>OPENWEATHER_API_KEY</code>) -- Current Weather
+      is unavailable until one is set. The 5-Day Forecast below is showing
+      {{ 'cached' if forecast_source == 'cache' else 'placeholder' }} data for the same reason.
+    </div>
+  {% elif current_source == "unavailable" %}
+    <div class="alert alert-warning" role="alert">
+      <i class="bi bi-exclamation-triangle me-1"></i>
+      Couldn't reach OpenWeatherMap just now -- Current Weather is temporarily unavailable.
+    </div>
+  {% endif %}
+
+  <div class="row g-3 mb-4">
+    <!-- Current Weather -->
+    <div class="col-12 col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="h6 text-success"><i class="bi bi-thermometer-sun me-1"></i>Current Weather</h2>
+          {% if current %}
+            <p class="display-6 mb-0">{{ "%.0f" | format(current.temperature) }}&deg;C</p>
+            <p class="text-muted mb-1">{{ current.description }}</p>
+            <p class="small mb-0">Feels like {{ "%.0f" | format(current.feelsLike) }}&deg;C &middot; Humidity {{ current.humidity }}%</p>
+            <p class="small mb-0">Wind {{ current.windSpeed }} m/s</p>
+          {% else %}
+            <p class="text-muted mb-0">Not available right now.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Care Recommendation -->
+    <div class="col-12 col-md-8">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body">
+          <h2 class="h6 text-success"><i class="bi bi-heart-pulse me-1"></i>Care Recommendation</h2>
+          <p class="mb-1">{{ recommendation.suggestionText }}</p>
+          {% if time_sensitive %}
+            <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Time-sensitive</span>
+          {% endif %}
+          {% if not has_sensor %}
+            <p class="small text-muted mt-2 mb-0">
+              <i class="bi bi-info-circle me-1"></i>
+              This plant has no paired sensor yet, so recommendations are limited until the
+              IoT Sensor Module is available.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5-Day Forecast -->
+  <h2 class="h6 text-success mb-2"><i class="bi bi-calendar3 me-1"></i>5-Day Forecast</h2>
+  {% if forecast_source != "live" %}
+    <p class="small text-muted mb-2">
+      <i class="bi bi-info-circle me-1"></i>
+      Showing {{ 'cached' if forecast_source == 'cache' else 'placeholder' }} data
+      {% if forecast_source == "cache" %}from the last successful check{% else %}(no forecast has been fetched for this location yet){% endif %}.
+    </p>
+  {% endif %}
+  <div class="row row-cols-2 row-cols-sm-3 row-cols-md-5 g-2">
+    {% for day in forecast %}
+      <div class="col">
+        <div class="card text-center h-100 shadow-sm border-0">
+          <div class="card-body p-2">
+            <p class="small text-muted mb-1">{{ day.date }}</p>
+            <p class="mb-1">
+              {% if day.rainExpected %}<i class="bi bi-cloud-rain-fill text-primary"></i>{% else %}<i class="bi bi-sun-fill text-warning"></i>{% endif %}
+            </p>
+            <p class="small mb-0">{{ "%.0f" | format(day.tempMin) }}&deg; / {{ "%.0f" | format(day.tempMax) }}&deg;</p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
