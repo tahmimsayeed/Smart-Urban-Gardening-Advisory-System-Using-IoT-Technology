@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ plant.name }} &mdash; Smart Urban Gardening{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <a href="{{ url_for('plants.dashboard') }}" class="text-decoration-none text-success mb-3 d-inline-block">
+    <i class="bi bi-arrow-left me-1"></i>Back to My Plants
+  </a>
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
+          <h1 class="h3 mb-1"><i class="bi bi-flower2 text-success me-2"></i>{{ plant.name }}</h1>
+          <p class="text-muted mb-2">{{ plant.type }}</p>
+          {% if plant.location %}
+            <p class="mb-2"><i class="bi bi-geo-alt me-1"></i>{{ plant.location }}</p>
+          {% endif %}
+          <a href="{{ url_for('sensors.sensor', plant_id=plant.plantId) }}" class="text-decoration-none">
+            <span class="badge {{ 'bg-success' if plant.sensor else 'bg-secondary' }}">
+              <i class="bi bi-broadcast me-1"></i>{{ 'Sensor paired' if plant.sensor else 'No sensor paired yet' }}
+            </span>
+          </a>
+        </div>
+
+        <div class="d-flex gap-2">
+          <a href="{{ url_for('plants.edit_plant', plant_id=plant.plantId) }}" class="btn btn-outline-success">
+            <i class="bi bi-pencil-square me-1"></i>Edit
+          </a>
+          <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <i class="bi bi-trash me-1"></i>Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 text-success mb-1"><i class="bi bi-camera me-2"></i>Disease Detection</h2>
+      <p class="text-muted mb-3">Upload a leaf photo to check for disease and get a treatment recommendation.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('disease.diagnose', plant_id=plant.plantId) }}" class="btn btn-success">
+          <i class="bi bi-camera me-1"></i>Diagnose Leaf
+        </a>
+        <a href="{{ url_for('disease.history', plant_id=plant.plantId) }}" class="btn btn-outline-success">
+          <i class="bi bi-clock-history me-1"></i>View History
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 text-success mb-1"><i class="bi bi-cloud-sun me-2"></i>Weather &amp; Care</h2>
+      <p class="text-muted mb-3">Check the local forecast and get a weather-aware care recommendation.</p>
+      <a href="{{ url_for('weather.weather', plant_id=plant.plantId) }}" class="btn btn-success">
+        <i class="bi bi-cloud-sun me-1"></i>View Weather &amp; Recommendation
+      </a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 text-success mb-1"><i class="bi bi-broadcast me-2"></i>IoT Sensor</h2>
+      <p class="text-muted mb-3">Pair a simulated sensor and record moisture, temperature, and humidity readings.</p>
+      <a href="{{ url_for('sensors.sensor', plant_id=plant.plantId) }}" class="btn btn-success">
+        <i class="bi bi-broadcast me-1"></i>{{ 'Manage Sensor' if plant.sensor else 'Pair a Sensor' }}
+      </a>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <h2 class="h5 text-success mb-1"><i class="bi bi-bell me-2"></i>Alerts</h2>
+      <p class="text-muted mb-3">Set a soil moisture threshold and review past alerts for this plant.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('alerts.thresholds', plant_id=plant.plantId) }}" class="btn btn-success">
+          <i class="bi bi-sliders me-1"></i>Set Threshold
+        </a>
+        <a href="{{ url_for('alerts.plant_alerts', plant_id=plant.plantId) }}" class="btn btn-outline-success">
+          <i class="bi bi-clock-history me-1"></i>View Alert History
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal (Bootstrap 5) -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Delete Plant</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong>{{ plant.name }}</strong>?</p>
+        <p class="text-muted small mb-0">This will also permanently delete its paired sensor, sensor readings, diagnosis history, alerts, and care recommendations. This cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form method="POST" action="{{ url_for('plants.delete_plant', plant_id=plant.plantId) }}" class="d-inline">
+          <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Delete Permanently</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

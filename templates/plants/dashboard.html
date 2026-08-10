@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}My Plants &mdash; Smart Urban Gardening{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1 text-success"><i class="bi bi-flower1 me-2"></i>My Plants</h1>
+      <p class="text-muted mb-0">Every plant you've registered in your garden.</p>
+    </div>
+    <a href="{{ url_for('plants.add_plant') }}" class="btn btn-success">
+      <i class="bi bi-plus-lg me-1"></i>Add Plant
+    </a>
+  </div>
+
+  {% if plants %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+      {% for plant in plants %}
+        <div class="col">
+          <a href="{{ url_for('plants.view_plant', plant_id=plant.plantId) }}" class="text-decoration-none text-reset">
+            <div class="card h-100 shadow-sm border-0 plant-card">
+              <div class="card-body">
+                <h5 class="card-title mb-1"><i class="bi bi-flower2 text-success me-1"></i>{{ plant.name }}</h5>
+                <p class="card-text text-muted mb-2">{{ plant.type }}</p>
+                {% if plant.location %}
+                  <p class="card-text small mb-2"><i class="bi bi-geo-alt me-1"></i>{{ plant.location }}</p>
+                {% endif %}
+                <span class="badge {{ 'bg-success' if plant.sensor else 'bg-secondary' }}">
+                  <i class="bi bi-broadcast me-1"></i>{{ 'Sensor paired' if plant.sensor else 'No sensor yet' }}
+                </span>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-flower1 text-success" style="font-size: 3rem;"></i>
+      <p class="text-muted mt-3 mb-3">You haven't added any plants yet.</p>
+      <a href="{{ url_for('plants.add_plant') }}" class="btn btn-success">
+        <i class="bi bi-plus-lg me-1"></i>Add Your First Plant
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
