@@ -1,0 +1,33 @@
+/* custom.css -- small, deliberate overrides on top of Bootstrap 5.
+   Kept minimal per the project's "modern, minimal, professional" UI goal:
+   let Bootstrap do the heavy lifting, only tweak what needs a project feel. */
+
+:root {
+  --sg-green: #2e7d32;
+}
+
+body {
+  background-color: #f7f9f6;
+}
+
+.navbar-brand i {
+  color: #ffffffcc;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+.btn-success {
+  background-color: var(--sg-green);
+  border-color: var(--sg-green);
+}
+.btn-success:hover {
+  background-color: #1b5e20;
+  border-color: #1b5e20;
+}
+
+.btn-outline-success {
+  color: var(--sg-green);
+  border-color: var(--sg-green);
+}
