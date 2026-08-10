@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Diagnose {{ plant.name }} &mdash; Smart Urban Gardening{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+
+      <a href="{{ url_for('plants.view_plant', plant_id=plant.plantId) }}" class="text-decoration-none text-success mb-3 d-inline-block">
+        <i class="bi bi-arrow-left me-1"></i>Back to {{ plant.name }}
+      </a>
+
+      {% if mock_mode %}
+        <div class="alert alert-warning" role="alert">
+          <i class="bi bi-exclamation-triangle me-1"></i>
+          <strong>No trained model loaded yet.</strong> Results will be a mock prediction for
+          testing purposes until <code>plant_model.keras</code> is trained (in Colab) and placed
+          in <code>ml_model/</code>.
+        </div>
+      {% endif %}
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="h3 mb-1 text-success"><i class="bi bi-camera me-2"></i>Diagnose Leaf</h1>
+          <p class="text-muted mb-4">Upload a photo of a leaf from <strong>{{ plant.name }}</strong> to check for disease.</p>
+
+          <form method="POST" action="{{ url_for('disease.diagnose', plant_id=plant.plantId) }}"
+                enctype="multipart/form-data" novalidate>
+            <div class="mb-3">
+              <label for="image" class="form-label">Leaf image</label>
+              <input type="file" class="form-control" id="image" name="image" accept="image/png, image/jpeg" required>
+              <div class="form-text">PNG or JPG, up to 8 MB. Clear, well-lit close-ups work best.</div>
+            </div>
+
+            <div class="mb-4 text-center">
+              <img id="imagePreview" src="#" alt="Preview" class="img-fluid rounded d-none" style="max-height: 260px;">
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2">
+              <i class="bi bi-search me-1"></i>Upload &amp; Diagnose
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="text-center mt-3">
+        <a href="{{ url_for('disease.history', plant_id=plant.plantId) }}" class="text-decoration-none">
+          <i class="bi bi-clock-history me-1"></i>View Disease History for {{ plant.name }}
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Small, self-contained preview -- lets the Gardener confirm they picked
+  // the right photo before uploading. No framework needed for this.
+  document.getElementById("image").addEventListener("change", function (event) {
+    const preview = document.getElementById("imagePreview");
+    const file = event.target.files[0];
+    if (!file) {
+      preview.classList.add("d-none");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      preview.src = e.target.result;
+      preview.classList.remove("d-none");
+    };
+    reader.readAsDataURL(file);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Diagnosis Result &mdash; Smart Urban Gardening{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+
+          <div class="text-center mb-4">
+            <img src="{{ url_for('uploaded_file', filename=diagnosis.imagePath) }}" alt="Uploaded leaf"
+                 class="img-fluid rounded" style="max-height: 260px;">
+          </div>
+
+          <h1 class="h4 text-center mb-1">
+            {% if diagnosis.is_disease() %}
+              <i class="bi bi-exclamation-triangle-fill text-danger me-1"></i>
+            {% else %}
+              <i class="bi bi-check-circle-fill text-success me-1"></i>
+            {% endif %}
+            {{ diagnosis.diseaseLabel.replace('_', ' ') }}
+          </h1>
+          <p class="text-center text-muted mb-4">on {{ plant.name }}</p>
+
+          {% if mock_mode %}
+            <div class="alert alert-warning small" role="alert">
+              <i class="bi bi-exclamation-triangle me-1"></i>
+              This is a <strong>mock result</strong> (no trained model loaded yet) -- not a real diagnosis.
+            </div>
+          {% endif %}
+
+          <div class="mb-4">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="fw-semibold">Confidence Score</span>
+              <span>{{ "%.0f" | format(diagnosis.confidenceScore * 100) }}%</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+              <div class="progress-bar {{ 'bg-danger' if diagnosis.is_disease() else 'bg-success' }}" role="progressbar"
+                   style="width: {{ (diagnosis.confidenceScore * 100) | round(0, 'floor') }}%"></div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h2 class="h6 text-success"><i class="bi bi-heart-pulse me-1"></i>Treatment Recommendation</h2>
+            <p class="mb-2">{{ diagnosis.treatmentTip }}</p>
+            <a href="{{ url_for('knowledge_base.browse', q=diagnosis.diseaseLabel.replace('_', ' ')) }}" class="small text-decoration-none">
+              <i class="bi bi-book me-1"></i>Learn more in the Knowledge Base
+            </a>
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('disease.diagnose', plant_id=plant.plantId) }}" class="btn btn-success flex-grow-1">
+              <i class="bi bi-arrow-repeat me-1"></i>Diagnose Another
+            </a>
+            <a href="{{ url_for('disease.history', plant_id=plant.plantId) }}" class="btn btn-outline-success">
+              <i class="bi bi-clock-history me-1"></i>History
+            </a>
+            <a href="{{ url_for('plants.view_plant', plant_id=plant.plantId) }}" class="btn btn-outline-secondary">
+              Back to Plant
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
