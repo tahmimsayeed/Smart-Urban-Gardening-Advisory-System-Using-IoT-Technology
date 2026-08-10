@@ -1,0 +1,19 @@
+# Secrets -- never commit your real API keys
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Database (machine-specific, contains your local accounts/plants/data)
+*.db
+
+# Uploaded leaf images (machine-specific runtime data)
+uploads/*
+!uploads/.gitkeep
+
+# Trained ML model files (can be large -- remove these two lines if you
+# want to track plant_model.keras / labels.json in git instead)
+ml_model/*.keras
+ml_model/labels.json
