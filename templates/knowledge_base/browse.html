@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Knowledge Base &mdash; Smart Urban Gardening{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="h3 mb-1 text-success"><i class="bi bi-book me-2"></i>Knowledge Base</h1>
+  <p class="text-muted mb-4">Plant care information, disease symptoms, and treatment guidance.</p>
+
+  <form method="GET" action="{{ url_for('knowledge_base.browse') }}" class="row g-2 mb-4">
+    <div class="col-12 col-sm-6">
+      <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="Search e.g. mildew, watering...">
+    </div>
+    <div class="col-8 col-sm-4">
+      <select name="category" class="form-select">
+        <option value="" {% if not category %}selected{% endif %}>All categories</option>
+        {% for c in categories %}
+          <option value="{{ c }}" {% if category == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-4 col-sm-2">
+      <button type="submit" class="btn btn-outline-success w-100">Search</button>
+    </div>
+  </form>
+
+  {% if articles %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+      {% for a in articles %}
+        <div class="col">
+          <a href="{{ url_for('knowledge_base.article', article_id=a.articleId) }}" class="text-decoration-none text-reset">
+            <div class="card h-100 shadow-sm border-0">
+              <div class="card-body">
+                {% if a.category %}<span class="badge bg-success mb-2">{{ a.category }}</span>{% endif %}
+                <h5 class="card-title mb-2">{{ a.title }}</h5>
+                {% if a.symptoms %}<p class="card-text small text-muted">{{ a.symptoms[:110] }}{% if a.symptoms|length > 110 %}...{% endif %}</p>{% endif %}
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-book text-success" style="font-size: 3rem;"></i>
+      <p class="text-muted mt-3 mb-0">No articles found{% if query or category %} matching your search{% endif %}.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

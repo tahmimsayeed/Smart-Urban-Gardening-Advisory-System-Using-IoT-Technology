@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} &mdash; Knowledge Base{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-7">
+
+      <a href="{{ url_for('knowledge_base.browse') }}" class="text-decoration-none text-success mb-3 d-inline-block">
+        <i class="bi bi-arrow-left me-1"></i>Back to Knowledge Base
+      </a>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          {% if article.category %}<span class="badge bg-success mb-2">{{ article.category }}</span>{% endif %}
+          <h1 class="h3 mb-4">{{ article.title }}</h1>
+
+          {% if article.symptoms %}
+            <h2 class="h6 text-success"><i class="bi bi-eye me-1"></i>Symptoms</h2>
+            <p class="mb-4">{{ article.symptoms }}</p>
+          {% endif %}
+
+          {% if article.treatment %}
+            <h2 class="h6 text-success"><i class="bi bi-heart-pulse me-1"></i>Treatment / Guidance</h2>
+            <p class="mb-0">{{ article.treatment }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
