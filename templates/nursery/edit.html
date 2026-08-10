@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ product.name }} &mdash; Smart Urban Gardening{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-10 col-md-7 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="h3 mb-1 text-success"><i class="bi bi-pencil-square me-2"></i>Edit Product</h1>
+          <p class="text-muted mb-4">Update details for {{ product.name }}.</p>
+
+          <form method="POST" action="{{ url_for('nursery.edit_product', product_id=product.productId) }}" novalidate>
+            <div class="mb-3">
+              <label class="form-label d-block">Category</label>
+              {% set cur_category = category if category is defined else product.category %}
+              <div class="btn-group w-100" role="group">
+                <input type="radio" class="btn-check" name="category" id="catTool" value="Tool" {% if cur_category == 'Tool' %}checked{% endif %}>
+                <label class="btn btn-outline-success" for="catTool"><i class="bi bi-tools me-1"></i>Tool</label>
+
+                <input type="radio" class="btn-check" name="category" id="catPlant" value="Plant" {% if cur_category == 'Plant' %}checked{% endif %}>
+                <label class="btn btn-outline-success" for="catPlant"><i class="bi bi-flower1 me-1"></i>Plant</label>
+
+                <input type="radio" class="btn-check" name="category" id="catFertilizer" value="Fertilizer" {% if cur_category == 'Fertilizer' %}checked{% endif %}>
+                <label class="btn btn-outline-success" for="catFertilizer"><i class="bi bi-moisture me-1"></i>Fertilizer</label>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="name" class="form-label">Product name</label>
+              <input type="text" class="form-control" id="name" name="name"
+                     value="{{ name if name is defined else product.name }}" required autofocus>
+            </div>
+
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label for="price" class="form-label">Price (&#2547;)</label>
+                <input type="number" step="0.01" min="0" class="form-control" id="price" name="price"
+                       value="{{ price if price is defined else product.price }}" required>
+              </div>
+              <div class="col-6 mb-3">
+                <label for="quantity" class="form-label">Quantity in stock</label>
+                <input type="number" step="1" min="0" class="form-control" id="quantity" name="quantity"
+                       value="{{ quantity if quantity is defined else product.quantity }}" required>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="description" class="form-label">Description <span class="text-muted">(optional)</span></label>
+              <textarea class="form-control" id="description" name="description" rows="3">{{ description if description is defined else (product.description or '') }}</textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success flex-grow-1"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
+              <a href="{{ url_for('nursery.my_products') }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

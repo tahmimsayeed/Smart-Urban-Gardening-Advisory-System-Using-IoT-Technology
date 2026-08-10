@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Add Product &mdash; Smart Urban Gardening{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-10 col-md-7 col-lg-6">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="h3 mb-1 text-success"><i class="bi bi-plus-circle me-2"></i>Add Product Listing</h1>
+          <p class="text-muted mb-4">List a tool, plant, or fertilizer for Gardeners to discover.</p>
+
+          <form method="POST" action="{{ url_for('nursery.add_product') }}" novalidate>
+            <div class="mb-3">
+              <label class="form-label d-block">Category</label>
+              <div class="btn-group w-100" role="group">
+                <input type="radio" class="btn-check" name="category" id="catTool" value="Tool" {% if category == 'Tool' %}checked{% endif %}>
+                <label class="btn btn-outline-success" for="catTool"><i class="bi bi-tools me-1"></i>Tool</label>
+
+                <input type="radio" class="btn-check" name="category" id="catPlant" value="Plant" {% if not category or category == 'Plant' %}checked{% endif %}>
+                <label class="btn btn-outline-success" for="catPlant"><i class="bi bi-flower1 me-1"></i>Plant</label>
+
+                <input type="radio" class="btn-check" name="category" id="catFertilizer" value="Fertilizer" {% if category == 'Fertilizer' %}checked{% endif %}>
+                <label class="btn btn-outline-success" for="catFertilizer"><i class="bi bi-moisture me-1"></i>Fertilizer</label>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="name" class="form-label">Product name</label>
+              <input type="text" class="form-control" id="name" name="name" value="{{ name or '' }}"
+                     placeholder="e.g. Organic Compost 5kg" required autofocus>
+            </div>
+
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label for="price" class="form-label">Price (&#2547;)</label>
+                <input type="number" step="0.01" min="0" class="form-control" id="price" name="price" value="{{ price or '' }}" required>
+              </div>
+              <div class="col-6 mb-3">
+                <label for="quantity" class="form-label">Quantity in stock</label>
+                <input type="number" step="1" min="0" class="form-control" id="quantity" name="quantity" value="{{ quantity or '' }}" required>
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label for="description" class="form-label">Description <span class="text-muted">(optional)</span></label>
+              <textarea class="form-control" id="description" name="description" rows="3">{{ description or '' }}</textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-success flex-grow-1"><i class="bi bi-check-lg me-1"></i>Add Product</button>
+              <a href="{{ url_for('nursery.my_products') }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

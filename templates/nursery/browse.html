@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Marketplace &mdash; Smart Urban Gardening{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h1 class="h3 mb-1 text-success"><i class="bi bi-shop-window me-2"></i>Nursery Marketplace</h1>
+  <p class="text-muted mb-4">Browse tools, plants, and fertilizer from local nurseries.</p>
+
+  <form method="GET" action="{{ url_for('nursery.browse') }}" class="row g-2 mb-4">
+    <div class="col-12 col-sm-6">
+      <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="Search products...">
+    </div>
+    <div class="col-8 col-sm-4">
+      <select name="category" class="form-select">
+        <option value="" {% if not category %}selected{% endif %}>All categories</option>
+        <option value="Tool" {% if category == 'Tool' %}selected{% endif %}>Tool</option>
+        <option value="Plant" {% if category == 'Plant' %}selected{% endif %}>Plant</option>
+        <option value="Fertilizer" {% if category == 'Fertilizer' %}selected{% endif %}>Fertilizer</option>
+      </select>
+    </div>
+    <div class="col-4 col-sm-2">
+      <button type="submit" class="btn btn-outline-success w-100">Search</button>
+    </div>
+  </form>
+
+  {% if products %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+      {% for p in products %}
+        <div class="col">
+          <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+              <span class="badge bg-success mb-2">{{ p.category }}</span>
+              <h5 class="card-title mb-1">{{ p.name }}</h5>
+              <p class="card-text mb-1">&#2547;{{ "%.2f" | format(p.price) }}</p>
+              <p class="card-text small text-muted mb-2">
+                {% if p.quantity > 0 %}{{ p.quantity }} in stock{% else %}<span class="text-danger">Out of stock</span>{% endif %}
+              </p>
+              {% if p.description %}
+                <p class="card-text small mb-2">{{ p.description }}</p>
+              {% endif %}
+              <p class="card-text small text-muted mb-0">
+                <i class="bi bi-shop me-1"></i>{{ p.owner.businessName or p.owner.name }}
+              </p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-shop-window text-success" style="font-size: 3rem;"></i>
+      <p class="text-muted mt-3 mb-0">No products found{% if query or category %} matching your search{% endif %}.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

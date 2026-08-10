@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}My Products &mdash; Smart Urban Gardening{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1 text-success"><i class="bi bi-shop me-2"></i>My Products</h1>
+      <p class="text-muted mb-0">Every product listing you've added to the marketplace.</p>
+    </div>
+    <a href="{{ url_for('nursery.add_product') }}" class="btn btn-success">
+      <i class="bi bi-plus-lg me-1"></i>Add Product
+    </a>
+  </div>
+
+  {% if products %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+      {% for p in products %}
+        <div class="col">
+          <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
+              <span class="badge bg-success mb-2">{{ p.category }}</span>
+              <h5 class="card-title mb-1">{{ p.name }}</h5>
+              <p class="card-text mb-1">&#2547;{{ "%.2f" | format(p.price) }}</p>
+              <p class="card-text small text-muted mb-2">{{ p.quantity }} in stock</p>
+              {% if p.description %}
+                <p class="card-text small mb-3">{{ p.description }}</p>
+              {% endif %}
+              <div class="d-flex gap-2">
+                <a href="{{ url_for('nursery.edit_product', product_id=p.productId) }}" class="btn btn-sm btn-outline-success">
+                  <i class="bi bi-pencil-square me-1"></i>Edit
+                </a>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ p.productId }}">
+                  <i class="bi bi-trash me-1"></i>Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete confirmation modal -->
+        <div class="modal fade" id="deleteModal{{ p.productId }}" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Delete Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <p class="mb-0">Are you sure you want to delete <strong>{{ p.name }}</strong>? This cannot be undone.</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('nursery.delete_product', product_id=p.productId) }}" class="d-inline">
+                  <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Delete Permanently</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-shop text-success" style="font-size: 3rem;"></i>
+      <p class="text-muted mt-3 mb-3">You haven't listed any products yet.</p>
+      <a href="{{ url_for('nursery.add_product') }}" class="btn btn-success">
+        <i class="bi bi-plus-lg me-1"></i>Add Your First Product
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
