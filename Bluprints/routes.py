@@ -1,115 +1,128 @@
 """
-blueprints/auth/routes.py
+blueprints/plants/routes.py
 
-Module 1: Authentication (Register, Login, Logout).
+Module 2: Plant Management (Add Plant, Edit Plant, Delete Plant, View Plant).
 
-Uses Flask-Login for session management (per the project's Security
-requirement: "Session Management", not JWT) and Flask-Bcrypt for password
-hashing. This blueprint is intentionally self-contained -- it only touches
-the `User` model, so it can be tested independently of every later module.
+Follows the exact same conventions as Module 1 (blueprints/auth/routes.py):
+  - @login_required for every route (session-based, via Flask-Login)
+  - server-side validation via utils/validators.py, errors shown as
+    Bootstrap flash messages
+  - ownership-based access control (Security NFR): a Gardener may only
+    view/edit/delete their OWN plants -- enforced in get_owned_plant_or_404()
+
+Only Gardeners manage plants (Nursery Owners don't have a plant list) --
+this matches the Phase 03 Use Case Diagram, where "Add New Plant" /
+"View/Edit Plant Details" / "Delete Plant" are Gardener-only use cases.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from flask_login import login_user, logout_user, login_required, current_user
+from flask_login import login_required, current_user
 
-from extensions import db, bcrypt
-from models import User
-from utils.validators import validate_name, validate_email, validate_password, validate_role
+from extensions import db
+from models import Plant
+from utils.validators import validate_plant_name, validate_plant_type
+from utils.access_control import require_gardener, get_owned_plant_or_404
 
-auth_bp = Blueprint("auth", __name__, url_prefix="/auth", template_folder="../../templates/auth")
+plants_bp = Blueprint("plants", __name__, url_prefix="/plants", template_folder="../../templates/plants")
 
 
-@auth_bp.route("/register", methods=["GET", "POST"])
-def register():
-    # Already-logged-in users don't need the register page.
-    if current_user.is_authenticated:
-        return redirect(url_for("auth.dashboard_redirect"))
+@plants_bp.route("")
+@login_required
+def dashboard():
+    """FR: View Plant (list form) -- the Gardener's plant dashboard."""
+    redirect_resp = require_gardener()
+    if redirect_resp:
+        return redirect_resp
+
+    plants = Plant.query.filter_by(ownerId=current_user.userId).order_by(Plant.createdAt.desc()).all()
+    return render_template("plants/dashboard.html", plants=plants)
+
+
+@plants_bp.route("/add", methods=["GET", "POST"])
+@login_required
+def add_plant():
+    """FR: Add Plant."""
+    redirect_resp = require_gardener()
+    if redirect_resp:
+        return redirect_resp
 
     if request.method == "POST":
         name = request.form.get("name", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-        confirm_password = request.form.get("confirm_password", "")
-        role = request.form.get("role", "gardener")
-        business_name = request.form.get("business_name", "").strip()
+        plant_type = request.form.get("type", "").strip()
+        location = request.form.get("location", "").strip()
 
-        # --- Input Validation (Security requirement) ------------------------
-        errors = []
-        for err in (validate_name(name), validate_email(email),
-                    validate_password(password), validate_role(role)):
-            if err:
-                errors.append(err)
-        if password != confirm_password:
-            errors.append("Passwords do not match.")
-        if role == "nursery_owner" and not business_name:
-            errors.append("Business name is required for a Nursery Owner account.")
-        if not errors and User.query.filter_by(email=email).first():
-            errors.append("An account with this email already exists.")
-
+        errors = [e for e in (validate_plant_name(name), validate_plant_type(plant_type)) if e]
         if errors:
             for err in errors:
                 flash(err, "danger")
-            # re-render with the values the user already typed, except passwords
-            return render_template("auth/register.html", name=name, email=email,
-                                    role=role, business_name=business_name)
+            return render_template("plants/add.html", name=name, type=plant_type, location=location)
 
-        # --- Create the account ---------------------------------------------
-        user = User(
-            name=name,
-            email=email,
-            passwordHash=bcrypt.generate_password_hash(password).decode("utf-8"),
-            role=role,
-            businessName=business_name if role == "nursery_owner" else None,
-        )
-        db.session.add(user)
+        plant = Plant(ownerId=current_user.userId, name=name, type=plant_type, location=location or None)
+        db.session.add(plant)
         db.session.commit()
 
-        flash("Account created successfully. Please log in.", "success")
-        return redirect(url_for("auth.login"))
+        flash(f"'{plant.name}' was added to your garden.", "success")
+        return redirect(url_for("plants.dashboard"))
 
-    return render_template("auth/register.html")
+    return render_template("plants/add.html")
 
 
-@auth_bp.route("/login", methods=["GET", "POST"])
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for("auth.dashboard_redirect"))
+@plants_bp.route("/<plant_id>")
+@login_required
+def view_plant(plant_id):
+    """FR: View Plant (detail page)."""
+    redirect_resp = require_gardener()
+    if redirect_resp:
+        return redirect_resp
+
+    plant = get_owned_plant_or_404(plant_id)
+    return render_template("plants/view.html", plant=plant)
+
+
+@plants_bp.route("/<plant_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_plant(plant_id):
+    """FR: Edit Plant."""
+    redirect_resp = require_gardener()
+    if redirect_resp:
+        return redirect_resp
+
+    plant = get_owned_plant_or_404(plant_id)
 
     if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-        remember = bool(request.form.get("remember"))
+        name = request.form.get("name", "").strip()
+        plant_type = request.form.get("type", "").strip()
+        location = request.form.get("location", "").strip()
 
-        user = User.query.filter_by(email=email).first()
-        if user is None or not bcrypt.check_password_hash(user.passwordHash, password):
-            flash("Invalid email or password.", "danger")
-            return render_template("auth/login.html", email=email)
+        errors = [e for e in (validate_plant_name(name), validate_plant_type(plant_type)) if e]
+        if errors:
+            for err in errors:
+                flash(err, "danger")
+            return render_template("plants/edit.html", plant=plant, name=name, type=plant_type, location=location)
 
-        login_user(user, remember=remember)
-        flash(f"Welcome back, {user.name}!", "success")
+        plant.name = name
+        plant.type = plant_type
+        plant.location = location or None
+        db.session.commit()
 
-        # Support Flask-Login's "next" redirect for @login_required pages
-        next_page = request.args.get("next")
-        return redirect(next_page or url_for("auth.dashboard_redirect"))
+        flash(f"'{plant.name}' was updated.", "success")
+        return redirect(url_for("plants.view_plant", plant_id=plant.plantId))
 
-    return render_template("auth/login.html")
+    return render_template("plants/edit.html", plant=plant)
 
 
-@auth_bp.route("/logout")
+@plants_bp.route("/<plant_id>/delete", methods=["POST"])
 @login_required
-def logout():
-    logout_user()
-    flash("You have been logged out.", "info")
-    return redirect(url_for("auth.login"))
+def delete_plant(plant_id):
+    """FR: Delete Plant. POST-only and CSRF-safe-by-convention (no GET
+    delete link that a crawler/prefetcher could trigger accidentally)."""
+    redirect_resp = require_gardener()
+    if redirect_resp:
+        return redirect_resp
 
+    plant = get_owned_plant_or_404(plant_id)
+    plant_name = plant.name
+    db.session.delete(plant)
+    db.session.commit()
 
-@auth_bp.route("/dashboard-redirect")
-@login_required
-def dashboard_redirect():
-    """
-    Sends each role to its own dashboard. Gardeners go to the Plant
-    Dashboard (Module 2). Nursery Owners go to their Product Dashboard
-    (Module 7, now built).
-    """
-    if current_user.is_gardener:
-        return redirect(url_for("plants.dashboard"))
-    return redirect(url_for("nursery.my_products"))
+    flash(f"'{plant_name}' and all of its sensor/diagnosis/alert history were deleted.", "info")
+    return redirect(url_for("plants.dashboard"))
