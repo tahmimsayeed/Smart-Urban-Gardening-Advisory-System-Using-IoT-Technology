@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Alert Threshold &mdash; {{ plant.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-10 col-md-7 col-lg-6">
+
+      <a href="{{ url_for('plants.view_plant', plant_id=plant.plantId) }}" class="text-decoration-none text-success mb-3 d-inline-block">
+        <i class="bi bi-arrow-left me-1"></i>Back to {{ plant.name }}
+      </a>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="h3 mb-1 text-success"><i class="bi bi-bell me-2"></i>Alert Threshold</h1>
+          <p class="text-muted mb-4">Get notified when {{ plant.name }}'s soil moisture drops too low.</p>
+
+          <form method="POST" action="{{ url_for('alerts.thresholds', plant_id=plant.plantId) }}" novalidate>
+            <div class="mb-4">
+              <label for="moisture_min" class="form-label">Minimum soil moisture (%)</label>
+              <input type="number" step="1" min="0" max="100" class="form-control" id="moisture_min" name="moisture_min"
+                     value="{{ threshold.value if threshold else 30 }}" required>
+              <div class="form-text">
+                You'll get a Threshold Alert whenever a new sensor reading falls below this value.
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2">
+              <i class="bi bi-check-lg me-1"></i>Save Threshold
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

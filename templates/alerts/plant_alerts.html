@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Alerts &mdash; {{ plant.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <a href="{{ url_for('plants.view_plant', plant_id=plant.plantId) }}" class="text-decoration-none text-success mb-3 d-inline-block">
+    <i class="bi bi-arrow-left me-1"></i>Back to {{ plant.name }}
+  </a>
+
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1 text-success"><i class="bi bi-bell me-2"></i>Alert History</h1>
+      <p class="text-muted mb-0">Every alert recorded for {{ plant.name }}.</p>
+    </div>
+    <a href="{{ url_for('alerts.thresholds', plant_id=plant.plantId) }}" class="btn btn-outline-success">
+      <i class="bi bi-sliders me-1"></i>Edit Threshold
+    </a>
+  </div>
+
+  {% if alerts %}
+    <div class="list-group">
+      {% for a in alerts %}
+        <div class="list-group-item py-3 {{ 'list-group-item-warning' if a.status == 'unread' else '' }}">
+          <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+              <h6 class="mb-1">
+                {% if a.alertType == "disease" %}
+                  <i class="bi bi-bug-fill text-danger me-1"></i>Disease Alert
+                {% else %}
+                  <i class="bi bi-droplet-half text-primary me-1"></i>Threshold Alert
+                {% endif %}
+                {% if a.status == "unread" %}<span class="badge bg-danger ms-1">Unread</span>{% endif %}
+              </h6>
+              <p class="mb-1">{{ a.message }}</p>
+              <p class="small text-muted mb-0">{{ a.timestamp.strftime('%b %d, %Y at %I:%M %p') }}</p>
+            </div>
+            {% if a.status == "unread" %}
+              <form method="POST" action="{{ url_for('alerts.acknowledge', plant_id=plant.plantId, alert_id=a.alertId) }}">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                  <i class="bi bi-check2 me-1"></i>Mark as Read
+                </button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-bell-slash text-success" style="font-size: 3rem;"></i>
+      <p class="text-muted mt-3 mb-0">No alerts recorded yet for this plant.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
