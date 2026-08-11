@@ -1,4 +1,4 @@
-# 🌱 Smart Urban Gardening Advisory System Using IoT Technology
+# Smart Urban Gardening Advisory System Using IoT Technology
 
 A responsive web application that helps urban gardeners manage their plants,
 detect leaf diseases using machine learning, receive weather-aware care
@@ -11,7 +11,7 @@ transfer learning on a labeled dataset of leaf diseases.
 
 ---
 
-## 👥 Team
+## Team
 
 | Name | Role / Modules |
 |---|---|
@@ -21,7 +21,7 @@ transfer learning on a labeled dataset of leaf diseases.
 
 ---
 
-## ✨ Features
+## Features
 
 | # | Module | What it does |
 |---|---|---|
@@ -36,7 +36,7 @@ transfer learning on a labeled dataset of leaf diseases.
 
 ---
 
-## 🧠 Machine Learning
+## Machine Learning
 
 Disease Detection is powered by **MobileNetV2** (pretrained on ImageNet),
 fine-tuned via **transfer learning** on a real leaf-disease dataset covering
@@ -52,7 +52,7 @@ Colab; the trained model achieved **97%+ validation accuracy**.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -66,7 +66,7 @@ Colab; the trained model achieved **97%+ validation accuracy**.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 smart_garden/
@@ -95,16 +95,16 @@ smart_garden/
 
 ---
 
-## 🚀 Getting Started
+## To Start Building
 
-### 1. Clone the repository
+### 1. to clone the repository
 
 ```bash
 git clone https://github.com/YOUR-USERNAME/YOUR-REPO-NAME.git
 cd YOUR-REPO-NAME
 ```
 
-### 2. Create and activate a virtual environment
+### 2. to Create and activate a virtual environment
 
 ```bash
 python -m venv venv
@@ -116,7 +116,7 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### 3. Install dependencies
+### 3. for installing dependencies
 
 ```bash
 pip install -r requirements.txt
@@ -124,7 +124,7 @@ pip install -r requirements.txt
 
 > `tensorflow-cpu` is a large package — this step can take a few minutes.
 
-### 4. Configure environment variables
+### 4. to Configure environment variables
 
 Copy the example file and fill in your own values:
 
@@ -143,7 +143,7 @@ cp .env.example .env
 Place `plant_model.keras` and `labels.json` into the `ml_model/` folder. Without
 them, Disease Detection runs in mock-prediction mode automatically.
 
-### 6. Run the application
+### 6. to Run the application
 
 ```bash
 python app.py
@@ -153,7 +153,7 @@ Open **http://127.0.0.1:5000** in your browser.
 
 ---
 
-## 🧪 Testing
+## for Testing
 
 Register two accounts to explore both roles:
 - A **Gardener** account — access Plant Management, Disease Detection, Weather,
@@ -162,7 +162,7 @@ Register two accounts to explore both roles:
 
 ---
 
-## 📊 Database Schema
+## Database Schema
 
 10 SQLAlchemy models, one per entity: `User`, `Plant`, `Sensor`,
 `SensorReading`, `DiagnosisResult`, `ThresholdSetting`, `Alert`,
@@ -171,7 +171,7 @@ Register two accounts to explore both roles:
 
 ---
 
-## 🔒 Security Notes
+## Security Notes
 
 - Passwords are hashed with **bcrypt** (never stored in plain text)
 - **Ownership-based access control**: users can only view/edit their own
@@ -181,7 +181,7 @@ Register two accounts to explore both roles:
 
 ---
 
-## 📚 Dataset Acknowledgment
+## Dataset Acknowledgment
 
 The disease detection model was trained on a plant leaf freshness and
 disease dataset covering Bitter Gourd, Bottle Gourd, Cauliflower, Cucumber,
@@ -189,7 +189,7 @@ Eggplant, and Tomato.
 
 ---
 
-## 📄 License
+## License
 
 This project was developed for academic purposes as part of a Software
 Engineering course project.
