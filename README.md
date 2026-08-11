@@ -13,14 +13,14 @@ this whole time).
 
 | # | Module | Status |
 |---|---|---|
-| 1 | Authentication (Register, Login, Logout) | ✅ Complete & tested |
-| 2 | Plant Management (Add, Edit, Delete, View) | ✅ Complete & tested |
-| 3 | Disease Detection (Upload, Predict, Confidence, Treatment, History) | ✅ Complete & tested |
-| 4 | Weather Recommendation (Current Weather, 5-Day Forecast, Care Recommendation) | ✅ Complete & tested |
-| 5 | IoT Sensor Module (Pair Sensor, Simulated Temp/Humidity/Soil Moisture) | ✅ Complete & tested |
-| 6 | Alert Module (Threshold Alert, Disease Alert, Unread Count, History) | ✅ Complete & tested |
-| 7 | Nursery Module (Add/Edit/Delete Product, Browse) | ✅ Complete & tested |
-| 8 | Knowledge Base (Display plant care information) | ✅ Complete & tested |
+| 1 | Authentication (Register, Login, Logout) |  Complete & tested |
+| 2 | Plant Management (Add, Edit, Delete, View) |  Complete & tested |
+| 3 | Disease Detection (Upload, Predict, Confidence, Treatment, History) |  Complete & tested |
+| 4 | Weather Recommendation (Current Weather, 5-Day Forecast, Care Recommendation) |  Complete & tested |
+| 5 | IoT Sensor Module (Pair Sensor, Simulated Temp/Humidity/Soil Moisture) |  Complete & tested |
+| 6 | Alert Module (Threshold Alert, Disease Alert, Unread Count, History) |  Complete & tested |
+| 7 | Nursery Module (Add/Edit/Delete Product, Browse) |  Complete & tested |
+| 8 | Knowledge Base (Display plant care information) |  Complete & tested |
 
 The full database schema (all 10 tables) is now fully in use.
 
