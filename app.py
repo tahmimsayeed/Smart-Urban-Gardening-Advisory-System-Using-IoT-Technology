@@ -53,6 +53,9 @@ def create_app(config_class=Config):
     from blueprints.nursery.routes import nursery_bp
     app.register_blueprint(nursery_bp)
 
+    from blueprints.knowledge_base.routes import knowledge_base_bp
+    app.register_blueprint(knowledge_base_bp)
+
     
 
     # --- Create database tables (all 10, per models/__init__.py) ------------
