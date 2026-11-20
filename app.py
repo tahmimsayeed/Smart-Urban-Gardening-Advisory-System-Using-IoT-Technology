@@ -47,7 +47,7 @@ def create_app(config_class=Config):
     from blueprints.sensor.routes import sensors_bp
     app.register_blueprint(sensors_bp)
 
-    from blueprints.alerts.routes import alerts_bp
+    from blueprints.alert.routes import alerts_bp
     app.register_blueprint(alerts_bp)
 
     from blueprints.nursery.routes import nursery_bp
