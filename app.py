@@ -44,7 +44,7 @@ def create_app(config_class=Config):
     from blueprints.weather.routes import weather_bp
     app.register_blueprint(weather_bp)
 
-    from blueprints.sensors.routes import sensors_bp
+    from blueprints.sensor.routes import sensors_bp
     app.register_blueprint(sensors_bp)
 
     from blueprints.alerts.routes import alerts_bp
