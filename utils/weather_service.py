@@ -37,7 +37,7 @@ def get_current_weather(location, api_key, current_url):
             "description": data["weather"][0]["description"].title(),
             "windSpeed": data["wind"]["speed"],
         }, "live"
-    except (requests.RequestException, KeyError, ValueError, IndexError):
+    except (requests.RequestException, KeyError, ValueError, TypeError, AttributeError, IndexError):
         return None, "unavailable"
 
 
@@ -63,7 +63,7 @@ def get_forecast(location, api_key, base_url):
                 # A database/cache outage should not discard a valid live forecast.
                 db.session.rollback()
             return forecast, "live"
-        except (requests.RequestException, KeyError, ValueError):
+        except (requests.RequestException, KeyError, ValueError, TypeError, AttributeError, IndexError):
             pass  # fall through to cache
 
     cached = _load_cache(location)
