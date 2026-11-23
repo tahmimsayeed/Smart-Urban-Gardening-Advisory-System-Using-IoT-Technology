@@ -9,6 +9,8 @@ at once instead of one-at-a-time.
 """
 import re
 
+from PIL import Image, UnidentifiedImageError
+
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 
@@ -52,6 +54,19 @@ def validate_image_file(filename, allowed_extensions):
         return f"Unsupported file type '.{ext}'. Allowed: {', '.join(sorted(allowed_extensions))}."
     return None
 
+
+def validate_image_content(file_storage, max_pixels=20_000_000):
+    """Verify uploaded bytes are a decodable image, not just a renamed file."""
+    try:
+        image = Image.open(file_storage.stream)
+        if image.width * image.height > max_pixels:
+            return "Image dimensions are too large. Please upload a smaller image."
+        image.verify()
+        file_storage.stream.seek(0)
+    except (UnidentifiedImageError, OSError, ValueError, Image.DecompressionBombError):
+        file_storage.stream.seek(0)
+        return "The uploaded file is not a valid image. Please choose a PNG or JPEG photo."
+    return None
 
 # --- Module 2: Plant Management -------------------------------------------
 
