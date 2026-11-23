@@ -66,8 +66,13 @@ def diagnose(plant_id):
             label, confidence, mode = predict(
                 saved_path, current_app.config["ML_MODEL_PATH"], current_app.config["ML_LABELS_PATH"]
             )
-        except Exception as exc:  # noqa: BLE001 -- surface any decode/inference failure to the user
-            flash(f"Diagnosis failed ({exc}). Please try again with a different image.", "danger")
+        except Exception:  # noqa: BLE001 -- image decoding and inference can fail for many reasons
+            current_app.logger.exception("Plant disease prediction failed")
+            try:
+                os.remove(saved_path)
+            except OSError:
+                current_app.logger.warning("Could not remove failed diagnosis upload: %s", saved_name)
+            flash("We could not process that image. Please try a clear PNG or JPEG leaf photo.", "danger")
             return render_template("disease/diagnose.html", plant=plant, mock_mode=mock_mode)
 
         # --- Treatment Recommendation ------------------------------------
@@ -82,12 +87,27 @@ def diagnose(plant_id):
             treatmentTip=treatment_tip,
         )
         db.session.add(diagnosis)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("Could not save plant disease diagnosis")
+            try:
+                os.remove(saved_path)
+            except OSError:
+                current_app.logger.warning("Could not remove unsaved diagnosis upload: %s", saved_name)
+            flash("The diagnosis could not be saved. Please try again.", "danger")
+            return render_template("disease/diagnose.html", plant=plant, mock_mode=mock_mode)
 
         # --- Trigger Disease Alert (Module 6), if warranted ------------------
         # Matches the Phase 03 Activity Diagram: a new diagnosis result is one
         # of the two events that can trigger an alert (see utils/alert_engine.py).
-        evaluate_diagnosis(plant, diagnosis)
+        try:
+            evaluate_diagnosis(plant, diagnosis)
+        except Exception:
+            # Diagnosis history is already committed. An alert-engine failure
+            # must not turn a successful diagnosis into a broken result page.
+            current_app.logger.exception("Could not evaluate disease alert")
 
         if mode == "mock":
             flash("No trained model found yet, so this is a MOCK result for testing. "
