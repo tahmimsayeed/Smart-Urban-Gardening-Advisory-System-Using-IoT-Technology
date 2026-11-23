@@ -56,9 +56,13 @@ def validate_image_file(filename, allowed_extensions):
 
 
 def validate_image_content(file_storage, max_pixels=20_000_000):
-    """Verify uploaded bytes are a decodable image, not just a renamed file."""
+    """Verify the upload is a real PNG/JPEG and reject oversized images."""
+    expected_formats = {"png": "PNG", "jpg": "JPEG", "jpeg": "JPEG"}
+    extension = (file_storage.filename or "").rsplit(".", 1)[-1].lower()
     try:
         image = Image.open(file_storage.stream)
+        if image.format != expected_formats.get(extension):
+            return "The image content does not match its file extension."
         if image.width * image.height > max_pixels:
             return "Image dimensions are too large. Please upload a smaller image."
         image.verify()
