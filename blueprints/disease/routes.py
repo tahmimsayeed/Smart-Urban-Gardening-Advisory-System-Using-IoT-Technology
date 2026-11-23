@@ -22,7 +22,7 @@ from flask_login import login_required
 
 from extensions import db
 from models import DiagnosisResult
-from utils.validators import validate_image_file
+from utils.validators import validate_image_file, validate_image_content
 from utils.treatment_tips import get_treatment_tip
 from utils.access_control import require_gardener, get_owned_plant_or_404
 from utils.ml_predictor import predict, is_mock_mode
@@ -52,6 +52,11 @@ def diagnose(plant_id):
         error = validate_image_file(file.filename, current_app.config["ALLOWED_IMAGE_EXTENSIONS"])
         if error:
             flash(error, "danger")
+            return render_template("disease/diagnose.html", plant=plant, mock_mode=mock_mode)
+
+        content_error = validate_image_content(file)
+        if content_error:
+            flash(content_error, "danger")
             return render_template("disease/diagnose.html", plant=plant, mock_mode=mock_mode)
 
         # --- Save the uploaded image -----------------------------------
