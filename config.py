@@ -14,7 +14,7 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "").lower() in {"1", "true", "yes"} or bool(os.environ.get("RENDER"))
-    PERMANENT_SESSION_LIFETIME_HOURS = 12
+    PERMANENT_SESSION_LIFETIME_HOURS = int(os.environ.get("PERMANENT_SESSION_LIFETIME_HOURS", "12"))
     PERMANENT_SESSION_LIFETIME = timedelta(hours=PERMANENT_SESSION_LIFETIME_HOURS)
 
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "sqlite:///" + os.path.join(BASE_DIR, "smart_garden.db"))
