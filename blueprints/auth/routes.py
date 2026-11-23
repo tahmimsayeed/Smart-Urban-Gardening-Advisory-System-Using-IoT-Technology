@@ -10,12 +10,25 @@ the `User` model, so it can be tested independently of every later module.
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
+from urllib.parse import urlsplit
 
 from extensions import db, bcrypt
 from models import User
 from utils.validators import validate_name, validate_email, validate_password, validate_role
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth", template_folder="../../templates/auth")
+
+
+def _is_safe_next_url(target):
+    """Allow only same-origin redirects after login (including local paths)."""
+    if not target:
+        return False
+    if any(ord(char) < 32 or ord(char) == 92 for char in target):
+        return False
+    parsed = urlsplit(target)
+    if parsed.scheme or parsed.netloc:
+        return parsed.scheme in {"http", "https"} and parsed.netloc == request.host
+    return target.startswith("/") and not target.startswith("//")
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
@@ -88,8 +101,10 @@ def login():
         flash(f"Welcome back, {user.name}!", "success")
 
         # Support Flask-Login's "next" redirect for @login_required pages
-        next_page = request.args.get("next")
-        return redirect(next_page or url_for("auth.dashboard_redirect"))
+        next_page = request.args.get("next", "")
+        if _is_safe_next_url(next_page):
+            return redirect(next_page)
+        return redirect(url_for("auth.dashboard_redirect"))
 
     return render_template("auth/login.html")
 
