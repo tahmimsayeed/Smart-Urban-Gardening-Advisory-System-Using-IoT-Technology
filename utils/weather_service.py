@@ -37,7 +37,7 @@ def get_current_weather(location, api_key, current_url):
             "description": data["weather"][0]["description"].title(),
             "windSpeed": data["wind"]["speed"],
         }, "live"
-    except (requests.RequestException, KeyError, ValueError, IndexError):
+    except (requests.RequestException, KeyError, ValueError, TypeError, AttributeError, IndexError):
         return None, "unavailable"
 
 
@@ -55,9 +55,15 @@ def get_forecast(location, api_key, base_url):
             resp.raise_for_status()
             data = resp.json()
             forecast = _summarize_5day(data)
-            _save_cache(location, forecast)
+            if not forecast:
+                raise ValueError("Weather provider returned an empty forecast.")
+            try:
+                _save_cache(location, forecast)
+            except Exception:
+                # A database/cache outage should not discard a valid live forecast.
+                db.session.rollback()
             return forecast, "live"
-        except (requests.RequestException, KeyError, ValueError):
+        except (requests.RequestException, KeyError, ValueError, TypeError, AttributeError, IndexError):
             pass  # fall through to cache
 
     cached = _load_cache(location)
@@ -79,7 +85,7 @@ def _summarize_5day(raw_openweather_response):
         d["tempMin"] = min(d["tempMin"], temp)
         d["tempMax"] = max(d["tempMax"], temp)
         d["rainExpected"] = d["rainExpected"] or rain
-    return list(days.values())[:5]
+    return sorted(days.values(), key=lambda item: item["date"])[:5]
 
 
 def _placeholder_forecast():
@@ -97,9 +103,16 @@ def _save_cache(location, forecast):
 
 
 def _load_cache(location):
-    entry = (
-        WeatherForecast.query.filter_by(location=location)
-        .order_by(WeatherForecast.fetchedAt.desc())
-        .first()
-    )
-    return json.loads(entry.payload) if entry else None
+    try:
+        entry = (
+            WeatherForecast.query.filter_by(location=location)
+            .order_by(WeatherForecast.fetchedAt.desc())
+            .first()
+        )
+        if not entry:
+            return None
+        payload = json.loads(entry.payload)
+        return payload if isinstance(payload, list) and payload else None
+    except Exception:
+        db.session.rollback()
+        return None

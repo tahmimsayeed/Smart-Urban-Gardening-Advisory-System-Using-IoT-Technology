@@ -22,7 +22,7 @@ from flask_login import login_required
 
 from extensions import db
 from models import DiagnosisResult
-from utils.validators import validate_image_file
+from utils.validators import validate_image_file, validate_image_content
 from utils.treatment_tips import get_treatment_tip
 from utils.access_control import require_gardener, get_owned_plant_or_404
 from utils.ml_predictor import predict, is_mock_mode
@@ -54,6 +54,11 @@ def diagnose(plant_id):
             flash(error, "danger")
             return render_template("disease/diagnose.html", plant=plant, mock_mode=mock_mode)
 
+        content_error = validate_image_content(file)
+        if content_error:
+            flash(content_error, "danger")
+            return render_template("disease/diagnose.html", plant=plant, mock_mode=mock_mode)
+
         # --- Save the uploaded image -----------------------------------
         os.makedirs(current_app.config["UPLOAD_FOLDER"], exist_ok=True)
         ext = file.filename.rsplit(".", 1)[-1].lower()
@@ -66,8 +71,13 @@ def diagnose(plant_id):
             label, confidence, mode = predict(
                 saved_path, current_app.config["ML_MODEL_PATH"], current_app.config["ML_LABELS_PATH"]
             )
-        except Exception as exc:  # noqa: BLE001 -- surface any decode/inference failure to the user
-            flash(f"Diagnosis failed ({exc}). Please try again with a different image.", "danger")
+        except Exception:  # noqa: BLE001 -- image decoding and inference can fail for many reasons
+            current_app.logger.exception("Plant disease prediction failed")
+            try:
+                os.remove(saved_path)
+            except OSError:
+                current_app.logger.warning("Could not remove failed diagnosis upload: %s", saved_name)
+            flash("We could not process that image. Please try a clear PNG or JPEG leaf photo.", "danger")
             return render_template("disease/diagnose.html", plant=plant, mock_mode=mock_mode)
 
         # --- Treatment Recommendation ------------------------------------
@@ -82,12 +92,27 @@ def diagnose(plant_id):
             treatmentTip=treatment_tip,
         )
         db.session.add(diagnosis)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("Could not save plant disease diagnosis")
+            try:
+                os.remove(saved_path)
+            except OSError:
+                current_app.logger.warning("Could not remove unsaved diagnosis upload: %s", saved_name)
+            flash("The diagnosis could not be saved. Please try again.", "danger")
+            return render_template("disease/diagnose.html", plant=plant, mock_mode=mock_mode)
 
         # --- Trigger Disease Alert (Module 6), if warranted ------------------
         # Matches the Phase 03 Activity Diagram: a new diagnosis result is one
         # of the two events that can trigger an alert (see utils/alert_engine.py).
-        evaluate_diagnosis(plant, diagnosis)
+        try:
+            evaluate_diagnosis(plant, diagnosis)
+        except Exception:
+            # Diagnosis history is already committed. An alert-engine failure
+            # must not turn a successful diagnosis into a broken result page.
+            current_app.logger.exception("Could not evaluate disease alert")
 
         if mode == "mock":
             flash("No trained model found yet, so this is a MOCK result for testing. "
